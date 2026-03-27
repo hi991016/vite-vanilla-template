@@ -31,6 +31,15 @@ export default defineConfig({
     },
   },
   build: {
-    rollupOptions: { input: pages },
+    rollupOptions: {
+      input: pages,
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor'
+          }
+        }
+      }
+    },
   },
 });
