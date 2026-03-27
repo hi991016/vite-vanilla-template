@@ -1,11 +1,10 @@
 // vite.config.ts
-import { defineConfig } from "vite";
+import { defineConfig, Plugin } from "vite";
 import { resolve } from "path";
 import { readdirSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
 
-// Fix __dirname cho ESM
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 const pages: Record<string, string> = {
@@ -24,7 +23,18 @@ readdirSync(__dirname, { withFileTypes: true })
     }
   });
 
+function cssVersionPlugin(): Plugin {
+  const version = Date.now();
+  return {
+    name: "css-version",
+    transformIndexHtml(html: string): string {
+      return html.replace(/(<link[^>]+\.css)(")/g, `$1?v=${version}$2`);
+    },
+  };
+}
+
 export default defineConfig({
+  plugins: [cssVersionPlugin()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -34,12 +44,18 @@ export default defineConfig({
     rollupOptions: {
       input: pages,
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            return 'vendor'
+        manualChunks(id: string) {
+          if (id.includes("node_modules")) {
+            return "vendor";
           }
-        }
-      }
+        },
+        assetFileNames: (assetInfo): string => {
+          if (assetInfo.name?.endsWith(".css")) {
+            return "assets/[name].css";
+          }
+          return "assets/[name]-[hash][extname]";
+        },
+      },
     },
   },
 });
