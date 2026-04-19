@@ -1,0 +1,29 @@
+/* Utils
+------------------------------------------------------------*/
+@use '@/styles/imports/core/mixins' as *;
+
+/* lazy load */
+img.lazy {
+  opacity: 0;
+  transition: opacity 0.7s cubic-bezier(0.455, 0.03, 0.515, 0.955);
+
+  &.loaded {
+    opacity: 1;
+  }
+}
+
+/* only device */
+[hidden],
+.sp-only {
+  display: none !important;
+}
+
+@include maxW {
+  .pc-only {
+    display: none !important;
+  }
+
+  .sp-only {
+    display: block !important;
+  }
+}
