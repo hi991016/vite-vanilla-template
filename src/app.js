@@ -12,12 +12,9 @@ const initAppHeight = async () => {
   if (CONFIG.isMobile.matches) {
     doc.style.setProperty('--app-height', `${doc.clientHeight}px`)
     doc.style.setProperty('--menu-height', `${menuH}px`)
-    await delay(1000)
-    document.querySelector('[data-interview-popup]').style.display = 'flex'
   } else {
     doc.style.removeProperty('--app-height')
     doc.style.removeProperty('--menu-height')
-    document.querySelector('[data-interview-popup]').style.display = ''
   }
 }
 
