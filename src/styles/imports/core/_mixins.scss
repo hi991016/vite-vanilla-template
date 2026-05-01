@@ -27,7 +27,7 @@
   display: block;
   position: relative;
   z-index: 1;
-  height: 0;
+  height: 100%;
   padding-bottom: calc($height / $width * 100%);
   background: $bg;
   overflow: hidden;
@@ -38,15 +38,6 @@
 
   @content;
 }
-// example
-// .thumbnail {
-//   @include picture(16, 9) {
-//     border-radius: 10px;
-//     img {
-//       transition: transform 0.3s;
-//     }
-//   }
-// }
 
 @mixin text($font-size, $font-family, $line-height, $color, $text-transform) {
   font-family: $font-family;
@@ -64,7 +55,7 @@
   overflow: hidden;
 }
 
-@mixin customscroll($width: 5px, $bgTrack: #000, $bgThumb: #ddd) {
+@mixin customscroll($width: 18px, $bgTrack: transparent, $bgThumb: #ccc) {
   &::-webkit-scrollbar {
     width: $width;
   }
@@ -73,6 +64,12 @@
   }
   &::-webkit-scrollbar-thumb {
     background: $bgThumb;
+    border-radius: 10px;
+    border: 6px solid transparent;
+    background-clip: content-box;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #ccc;
   }
 }
 

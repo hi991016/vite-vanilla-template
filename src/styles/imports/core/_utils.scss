@@ -14,16 +14,16 @@ img.lazy {
 
 /* only device */
 [hidden],
-.sp-only {
+[data-sp-only] {
   display: none !important;
 }
 
 @include maxW {
-  .pc-only {
+  [data-pc-only] {
     display: none !important;
   }
 
-  .sp-only {
+  [data-sp-only] {
     display: block !important;
   }
 }
