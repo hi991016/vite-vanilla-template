@@ -31,6 +31,7 @@ The build output stays readable and stable between builds, so the deployed HTML/
 └── src/
     ├── app.js            # JS entry
     ├── modules/          # JS modules (customLenis, ...)
+    ├── partials/         # Shared HTML for <include> (head, header, footer, ...)
     ├── assets/images/
     └── styles/
         ├── style.scss    # SCSS entry
@@ -70,12 +71,36 @@ contact/
 └── index.html
 ```
 
-Link the shared stylesheet and script with absolute paths:
+Copy an existing page and keep its `<include>` tags. The shared stylesheet and script come from `head.html` and `scripts.html`.
+
+## HTML Partials
+
+`<include>` pulls a file from `src/partials/` into the page, in dev and in build. The built HTML contains only the expanded markup, so the server copy needs nothing extra.
 
 ```html
-<link rel="stylesheet" href="/src/styles/style.scss">
-<script type="module" src="/src/app.js"></script>
+<include src="head.html" title="About Page" />
+<include src="header.html" />
 ```
+
+Attributes become props. A partial passes its props on to any partial it includes. Inside a partial:
+
+| Syntax | Result |
+|---|---|
+| `{{ title }}` | Prints the prop. Empty if it is not set. |
+| `{{#if key}} ... {{/if}}` | Keeps the block if the prop is set and not empty. |
+| `{{#if !key}}` | Keeps the block if the prop is not set or is empty. |
+| `{{#if key='value'}}` / `{{#if key!='value'}}` | Compares the prop with a value. |
+| `{{else}}` | Block used when the condition fails. |
+
+`page` is always set: `home` for the root `index.html`, otherwise the page folder name (`about`, `contact`, ...).
+
+```html
+<header class="c-header{{#if page='home'}} is-home{{/if}}">
+```
+
+Write the value in single quotes. Double quotes inside `class="..."` make Prettier rewrite the line when it formats on save.
+
+Blocks can nest. A tag on a line of its own removes that line from the output. Editing a partial reloads the page in dev.
 
 ## Path Alias
 
