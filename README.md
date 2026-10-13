@@ -150,20 +150,3 @@ If the deployed HTML/CSS was edited directly on the server, merge those edits ba
 
 Keep `_server/.gitkeep` when clearing `_server/`, or Git drops the folder.
 
-### Tagging Deploys
-
-Tag each deploy so step 1 is easy:
-
-```bash
-git tag deploy-2026-10-13
-```
-
-Next time the server copy changes:
-
-```bash
-git stash                         # if you have uncommitted work
-git checkout deploy-2026-10-13
-yarn build && yarn diff
-git checkout master
-git stash pop
-```
