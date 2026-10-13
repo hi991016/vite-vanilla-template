@@ -23,3 +23,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Server copy for yarn diff
+_server
+.diff

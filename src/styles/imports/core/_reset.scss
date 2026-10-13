@@ -1,8 +1,6 @@
 /* Reset
 ------------------------------------------------------------*/
 
-@charset 'utf-8';
-
 html,
 body,
 div,
@@ -71,7 +69,6 @@ video {
   padding: 0;
   border: 0;
   outline: 0;
-  box-sizing: border-box;
 }
 
 article,
@@ -90,22 +87,6 @@ svg,
 a,
 main {
   display: block;
-}
-
-body,
-table,
-input,
-textarea,
-select,
-option,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 h1,

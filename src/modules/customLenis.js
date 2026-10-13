@@ -5,10 +5,17 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 export let lenis = null
 gsap.registerPlugin(ScrollTrigger)
 
+// -- drive lenis from gsap's ticker; registered once, always reads whichever
+// -- instance `lenis` currently points to
+gsap.ticker.add((time) => lenis?.raf(time * 1000))
+gsap.ticker.lagSmoothing(0)
+
 let _preventResizeObserver = null
+let _wheelAbort = null
 let _scrollTimer = null
 let _scrollbarEl = null
 let _scrollbarThumb = null
+let _thumbTravel = 0
 let _onceBound = false
 
 const initScrollbar = () => {
@@ -20,12 +27,16 @@ const initScrollbar = () => {
 
   _onceBound = true
 
+  // -- cache the thumb travel distance so the scroll handler never reads layout
   const updateThumbSize = () => {
     const ratio = window.innerHeight / document.body.scrollHeight
-    _scrollbarThumb.style.height = Math.max(ratio * window.innerHeight, 44) + 'px'
+    const thumbH = Math.max(ratio * window.innerHeight, 44)
+    _scrollbarThumb.style.height = thumbH + 'px'
+    _thumbTravel = _scrollbarEl.clientHeight - thumbH
   }
   updateThumbSize()
   new ResizeObserver(updateThumbSize).observe(document.body)
+  window.addEventListener('resize', updateThumbSize)
 
   // -- drag thumb to scroll
   let isDragging = false
@@ -54,11 +65,6 @@ const initScrollbar = () => {
     isDragging = false
     document.body.classList.remove('is-dragging')
   })
-
-  // -- drive lenis from gsap's ticker; registered once, always reads whichever
-  // -- instance `lenis` currently points to
-  gsap.ticker.add((time) => lenis?.raf(time * 1000))
-  gsap.ticker.lagSmoothing(0)
 }
 
 export const initLenis = () => {
@@ -67,8 +73,7 @@ export const initLenis = () => {
   lenis = new Lenis({
     duration: 1.2,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    smoothWheel: true,
-    prevent: (node) => node.closest('[data-lenis-prevent]') !== null
+    smoothWheel: true
   })
 
   // -- init data-lenis-prevent
@@ -85,6 +90,10 @@ export const initLenis = () => {
   _preventResizeObserver?.disconnect()
   _preventResizeObserver = new ResizeObserver(syncLenisPrevent)
   lenisPreventEls.forEach((el) => _preventResizeObserver.observe(el))
+
+  // -- drop the previous init's wheel listeners so re-init never stacks them
+  _wheelAbort?.abort()
+  _wheelAbort = new AbortController()
 
   const setupBoundaryScroll = (el) => {
     el.addEventListener(
@@ -104,7 +113,7 @@ export const initLenis = () => {
           lenis.scrollTo(lenis.targetScroll + e.deltaY, { immediate: false })
         }
       },
-      { passive: false }
+      { passive: false, signal: _wheelAbort.signal }
     )
   }
   lenisPreventEls.forEach(setupBoundaryScroll)
@@ -113,11 +122,8 @@ export const initLenis = () => {
   initScrollbar()
 
   lenis.on('scroll', ({ scroll, limit }) => {
-    if (_scrollbarEl && _scrollbarThumb) {
-      const progress = scroll / limit
-      const trackH = _scrollbarEl.clientHeight
-      const thumbH = _scrollbarThumb.clientHeight
-      _scrollbarThumb.style.top = progress * (trackH - thumbH) + 'px'
+    if (_scrollbarThumb && limit > 0) {
+      _scrollbarThumb.style.transform = `translateY(${(scroll / limit) * _thumbTravel}px)`
     }
 
     // -- show when scroll, hide after 1s when stop

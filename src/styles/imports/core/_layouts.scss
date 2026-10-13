@@ -2,13 +2,7 @@
 ------------------------------------------------------------*/
 @use '@/styles/imports/core/mixins' as *;
 
-@-ms-viewport {
-  width: device-width;
-}
-
 * {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;

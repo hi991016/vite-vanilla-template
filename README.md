@@ -145,6 +145,8 @@ yarn dev
 | `yarn dev` | Start dev server |
 | `yarn build` | Type-check + production build → `dist/` |
 | `yarn preview` | Preview production build locally |
+| `yarn diff` | Compare `dist/` with the server copy in `_server/` |
+| `yarn lint` | Lint `src/` with ESLint |
 
 ---
 
@@ -175,33 +177,21 @@ yarn dev
 }
 ```
 
-### Vite (`vite.config.ts`)
+### Vite (`vite.config.js`)
 
-```ts
-export default defineConfig({
-  plugins: [
-    cssVersionPlugin()  // Appends ?v={timestamp} to all CSS links in HTML after build
-  ],
-  resolve: {
-    alias: { '@': path.resolve(__dirname, './src') }
-  },
-  build: {
-    rollupOptions: {
-      input: pages,   // All auto-discovered HTML entry points
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) return 'vendor'  // Split vendor chunk
-        },
-        assetFileNames: (assetInfo) => {
-          // CSS files output without hash → assets/main.css (cache-busted via ?v= query)
-          if (assetInfo.name?.endsWith('.css')) return 'assets/[name].css'
-          // Other assets keep hash in filename
-          return 'assets/[name]-[hash][extname]'
-        }
-      }
-    }
-  }
-})
-```
+The build output is meant to be edited by the client directly on the server, so it stays readable and stable:
 
-> **Why no hash on CSS?** The `cssVersionPlugin` appends `?v={timestamp}` to every `<link>` tag at build time, so cache-busting is handled via query string instead of filename hash. This keeps the CSS filename stable (`main.css`) while still preventing browser caching issues.
+- **Fixed file names**: `assets/app.js`, `assets/styles.css`, `assets/images/[name][extname]` (no hash).
+- **Content-based cache busting**: `?v=<hash>` is appended to every built CSS/JS link. The hash only changes when the file content changes, so an unchanged file keeps the same URL between builds.
+- **CSS is not minified**: section comments from the SCSS partials stay in `styles.css`.
+- **Single JS bundle**: no vendor chunk, so the `?v=` on `app.js` covers all JS.
+
+---
+
+## Syncing Client Edits From the Server
+
+1. Download the current site from the server into `_server/` (git-ignored).
+2. Run `yarn build`, then `yarn diff` (or `yarn diff --stat` for file names only).
+3. Port the client's changes back into `src/` and the HTML sources, rebuild, and run `yarn diff` again until only intended changes remain.
+
+`yarn diff` ignores line endings (CRLF/LF) and `?v=` query strings, so only real edits show up. To compare against another folder, pass it as the first argument: `yarn diff path/to/copy`.
