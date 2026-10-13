@@ -23,9 +23,10 @@ const TEXT_EXT = ['.html', '.css', '.js', '.svg', '.json', '.txt', '.xml', '.hta
 const SKIP_EXT = ['.br', '.gz']
 
 for (const dir of [distDir, serverDir]) {
-  if (!existsSync(dir)) {
+  const isEmpty = existsSync(dir) && !readdirSync(dir).some((name) => name !== '.gitkeep')
+  if (!existsSync(dir) || isEmpty) {
     console.error(
-      `Not found: ${dir}/ ${dir === distDir ? '(run yarn build first)' : '(download the server files here)'}`
+      `Not found or empty: ${dir}/ ${dir === distDir ? '(run yarn build first)' : '(download the server files here)'}`
     )
     process.exit(1)
   }
@@ -38,7 +39,7 @@ const normalize = (src, dest) => {
     if (entry.isDirectory()) return normalize(from, to)
 
     const ext = extname(entry.name).toLowerCase()
-    if (SKIP_EXT.includes(ext)) return
+    if (SKIP_EXT.includes(ext) || entry.name === '.gitkeep') return
 
     mkdirSync(dirname(to), { recursive: true })
     if (TEXT_EXT.includes(ext)) {

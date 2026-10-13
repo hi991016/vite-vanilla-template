@@ -9,8 +9,14 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url))
 
 const pages = { main: resolve(__dirname, 'index.html') }
 
+// -- folders starting with `_` or `.` are never pages (e.g. _server/ holds the server copy)
 readdirSync(__dirname, { withFileTypes: true })
-  .filter((d) => d.isDirectory() && !['node_modules', 'public', 'src', 'dist'].includes(d.name))
+  .filter(
+    (d) =>
+      d.isDirectory() &&
+      !/^[_.]/.test(d.name) &&
+      !['node_modules', 'public', 'src', 'dist', 'scripts'].includes(d.name)
+  )
   .forEach((d) => {
     const htmlPath = resolve(__dirname, d.name, 'index.html')
     if (existsSync(htmlPath)) pages[d.name] = htmlPath
@@ -71,9 +77,16 @@ export default defineConfig({
   resolve: {
     alias: { '@': resolve(__dirname, './src') }
   },
+  // -- only scan the real pages for deps and ignore the server copy in dev
+  optimizeDeps: {
+    entries: Object.values(pages)
+  },
+  server: {
+    watch: { ignored: ['**/_server/**', '**/.diff/**'] }
+  },
   build: {
     sourcemap: false,
-    // -- keep css readable so the client can edit it on the server and diffs stay line-based
+    // -- keep css readable so it can be edited by hand on the server and diffs stay line-based
     cssMinify: false,
     rolldownOptions: {
       input: pages,

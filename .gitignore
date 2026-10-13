@@ -25,5 +25,6 @@ dist-ssr
 *.sw?
 
 # Server copy for yarn diff
-_server
+_server/*
+!_server/.gitkeep
 .diff

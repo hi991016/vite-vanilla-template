@@ -1,16 +1,20 @@
-# Vite Vanilla TypeScript Template
+# Vite Vanilla Template
 
-A minimal multi-page vanilla TypeScript starter with Vite and SCSS — no frameworks.
+A multi-page vanilla JS starter with Vite and SCSS. No framework.
+
+The build output stays readable and stable between builds, so the deployed HTML/CSS can be edited by hand on the server and compared back against the source.
 
 ---
 
 ## Tech Stack
 
-| | Library | Description |
-|---|---|---|
-| **Build** | Vite 8 | Dev server & bundler |
-| **Language** | TypeScript 5.9 | Type safety |
-| **Styling** | Sass 1.98 | SCSS support |
+| | Library |
+|---|---|
+| **Build** | Vite 8 |
+| **Styling** | Sass |
+| **Scroll** | Lenis + GSAP ScrollTrigger |
+| **Lazy load** | vanilla-lazyload |
+| **Lint / format** | ESLint 10 (flat config) + Prettier |
 
 ---
 
@@ -19,51 +23,66 @@ A minimal multi-page vanilla TypeScript starter with Vite and SCSS — no framew
 ```
 ├── index.html            # Home page
 ├── about/
-│   └── index.html        # About page (add any folder for new pages)
-├── public/
-│   └── favicon.ico
+│   └── index.html        # About page (any root folder with index.html becomes a page)
+├── public/               # Copied to dist/ as-is
+├── scripts/
+│   └── diff.js           # yarn diff
+├── _server/              # Server copy for yarn diff (contents are git-ignored)
 └── src/
-    ├── main.ts           # Entry point — imports main.scss
-    ├── assets/
+    ├── app.js            # JS entry
+    ├── modules/          # JS modules (customLenis, ...)
+    ├── assets/images/
     └── styles/
-        ├── main.scss
+        ├── style.scss    # SCSS entry
         └── imports/
-            ├── core/
-            │   ├── _variables.scss   # CSS variables
-            │   ├── _mixins.scss      # Reusable SCSS mixins
-            │   ├── _reset.scss       # CSS reset
-            │   ├── _layouts.scss     # Base layout & body setup
-            │   ├── _utils.scss       # Utility classes
-            │   ├── _libs.scss        # 3rd-party style overrides
-            │   ├── _components.scss  # Shared components
-            │   ├── _header.scss
-            │   ├── _menu.scss
-            │   └── _footer.scss
-            └── pages/
-                └── _home.scss        # Page-specific styles
+            ├── core/     # variables, reset, layouts, header, footer, ...
+            └── pages/    # page-specific styles
 ```
 
 ---
 
-## Multi-Page Setup
+## Getting Started
 
-Vite auto-discovers pages by scanning root-level folders for `index.html`. To add a new page, simply create a folder with an `index.html` inside:
+```bash
+yarn install
+yarn dev        # http://localhost:5173
+```
+
+## Scripts
+
+| Script | Description |
+|---|---|
+| `yarn dev` | Start dev server |
+| `yarn build` | Production build to `dist/` |
+| `yarn preview` | Preview the production build |
+| `yarn diff` | Compare `dist/` with the server copy in `_server/` |
+| `yarn lint` / `yarn lint:fix` | Lint `src/` |
+| `yarn format` | Format everything with Prettier |
+
+---
+
+## Adding a Page
+
+Create a root-level folder with an `index.html`. Vite picks it up automatically, no config change needed.
 
 ```
 contact/
-└── index.html   ← auto-detected as a new entry point
+└── index.html
 ```
 
-No changes to `vite.config.ts` needed.
+Link the shared stylesheet and script with absolute paths:
 
----
+```html
+<link rel="stylesheet" href="/src/styles/style.scss">
+<script type="module" src="/src/app.js"></script>
+```
 
 ## Path Alias
 
-`@` maps to `src/` — configured in both `tsconfig.json` and `vite.config.ts`.
+`@` maps to `src/`:
 
-```ts
-import '@/styles/main.scss'
+```js
+import { initLenis } from '@/modules/customLenis'
 ```
 
 ```scss
@@ -72,126 +91,54 @@ import '@/styles/main.scss'
 
 ---
 
-## Available SCSS Mixins
+## Build Output
 
-```scss
-// Flexbox center
-@include mid();
-
-// Absolute center
-@include mid(false);
-
-// Cover image (absolute + object-fit: cover)
-@include midimg();
-@include midimg(800px); // with max-width
-
-// Aspect-ratio image wrapper with dominant color placeholder
-@include dominantColor(16, 9, #ccc) {
-  border-radius: 8px; // optional extra styles
-}
-
-// Full text style shorthand
-@include text(1.6rem, sans-serif, 1.5, #333, none);
-
-// Clamp text to N lines
-@include overtext(2);
-
-// Custom scrollbar
-@include customscroll(6px, #f0f0f0, #999);
-
-// Responsive breakpoints
-@include maxW(768px) { ... }    // max-width
-@include minW(1200px) { ... }   // min-width
+```
+dist/
+├── index.html
+├── about/index.html
+└── assets/
+    ├── app.js          # all JS (libraries + app code), minified
+    ├── styles.css      # all CSS, not minified, section comments kept
+    └── images/
 ```
 
----
-
-## Utility Classes
-
-| Class | Description |
-|---|---|
-| `.pc-only` | Hidden on mobile (≤ 1024px) |
-| `.sp-only` | Hidden on desktop, visible on mobile |
-| `img.lazy` | Fade-in on lazy load — add `.loaded` class via JS |
+- **Fixed file names.** No hash in file names, so the same files can be edited and compared across deploys.
+- **Content-based cache busting.** HTML references `app.js?v=<hash>` and `styles.css?v=<hash>`. The hash comes from the file content, so it only changes when the file changes. Rebuilding unchanged source gives identical output.
+- **Single JS bundle.** There is no separate vendor chunk, so the `?v=` on `app.js` covers all JS.
+- **Absolute paths** (`base: '/'`). The site must be served from the domain root.
 
 ---
 
-## Page Transition
+## Syncing Server Edits Back to the Source
 
-The layout includes a built-in fade overlay. Add `body.fadeout` via JS to trigger a white overlay before navigating to another page.
+If the deployed HTML/CSS was edited directly on the server, merge those edits back into the source before deploying again.
 
-```js
-document.body.classList.add('fadeout')
-```
+1. Build the version that is currently deployed: `yarn build`. If `src/` or the HTML sources changed since that deploy, check out the deployed commit first. Otherwise the diff mixes your changes with the server edits.
+2. Download the site from the server into `_server/`. It must mirror `dist/`, with `_server/index.html` and `_server/assets/...` at the top level.
+3. Run `yarn diff --stat` to list changed files, and `yarn diff` to see each change. Lines marked `-` come from your build and lines marked `+` from the server.
+4. Port the server edits into the HTML sources and `src/styles/`.
+5. Run `yarn build`, then `yarn diff` again. Only your own new changes should remain.
+6. Upload `dist/` to the server.
 
----
+`yarn diff` ignores line endings (CRLF/LF) and `?v=` query strings. To compare another folder, pass its path: `yarn diff path/to/copy`.
 
-## Getting Started
+Keep `_server/.gitkeep` when clearing `_server/`, or Git drops the folder.
+
+### Tagging Deploys
+
+Tag each deploy so step 1 is easy:
 
 ```bash
-# Install dependencies
-yarn install
-
-# Start dev server → http://localhost:5173
-yarn dev
+git tag deploy-2026-10-13
 ```
 
----
+Next time the server copy changes:
 
-## Scripts
-
-| Script | Description |
-|---|---|
-| `yarn dev` | Start dev server |
-| `yarn build` | Type-check + production build → `dist/` |
-| `yarn preview` | Preview production build locally |
-| `yarn diff` | Compare `dist/` with the server copy in `_server/` |
-| `yarn lint` | Lint `src/` with ESLint |
-
----
-
-## Configuration
-
-### TypeScript (`tsconfig.json`)
-
-```json
-{
-  "compilerOptions": {
-    "target": "ES2023",
-    "lib": ["ES2023", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "baseUrl": ".",
-    "paths": { "@/*": ["src/*"] },
-
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "erasableSyntaxOnly": true,
-    "noUncheckedSideEffectImports": true,
-
-    "noEmit": true,
-    "skipLibCheck": true
-  }
-}
+```bash
+git stash                         # if you have uncommitted work
+git checkout deploy-2026-10-13
+yarn build && yarn diff
+git checkout master
+git stash pop
 ```
-
-### Vite (`vite.config.js`)
-
-The build output is meant to be edited by the client directly on the server, so it stays readable and stable:
-
-- **Fixed file names**: `assets/app.js`, `assets/styles.css`, `assets/images/[name][extname]` (no hash).
-- **Content-based cache busting**: `?v=<hash>` is appended to every built CSS/JS link. The hash only changes when the file content changes, so an unchanged file keeps the same URL between builds.
-- **CSS is not minified**: section comments from the SCSS partials stay in `styles.css`.
-- **Single JS bundle**: no vendor chunk, so the `?v=` on `app.js` covers all JS.
-
----
-
-## Syncing Client Edits From the Server
-
-1. Download the current site from the server into `_server/` (git-ignored).
-2. Run `yarn build`, then `yarn diff` (or `yarn diff --stat` for file names only).
-3. Port the client's changes back into `src/` and the HTML sources, rebuild, and run `yarn diff` again until only intended changes remain.
-
-`yarn diff` ignores line endings (CRLF/LF) and `?v=` query strings, so only real edits show up. To compare against another folder, pass it as the first argument: `yarn diff path/to/copy`.
