@@ -39,7 +39,7 @@ export default defineConfig({
     }),
     viteCompression({
       algorithm: 'brotliCompress',
-      filter: /\.(js|css)$/i
+      filter: /\.(js)$/i
     })
   ],
   resolve: {

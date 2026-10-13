@@ -1,6 +1,6 @@
 /* Layouts
 ------------------------------------------------------------*/
-@use "@/styles/imports/core/mixins" as *;
+@use '@/styles/imports/core/mixins' as *;
 
 @-ms-viewport {
   width: device-width;
@@ -42,7 +42,7 @@ body {
   min-height: 100vh;
 
   &::after {
-    content: "";
+    content: '';
     position: fixed;
     top: 0;
     left: 0;
@@ -50,7 +50,6 @@ body {
     height: 100vh;
     background: var(--white-cl);
     z-index: 9999;
-    pointer-events: none;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s linear;
