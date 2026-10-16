@@ -17,5 +17,8 @@
 // pages
 @use 'imports/pages/home';
 
+// transitions
+@use 'imports/transitions/stack';
+
 // utils
 @use 'imports/core/utils';

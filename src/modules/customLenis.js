@@ -30,6 +30,8 @@ const initScrollbar = () => {
   // -- cache the thumb travel distance so the scroll handler never reads layout
   const updateThumbSize = () => {
     const ratio = window.innerHeight / document.body.scrollHeight
+    // -- nothing to scroll: no bar, not even on hover
+    _scrollbarEl.hidden = ratio >= 1
     const thumbH = Math.max(ratio * window.innerHeight, 44)
     _scrollbarThumb.style.height = thumbH + 'px'
     _thumbTravel = _scrollbarEl.clientHeight - thumbH
@@ -121,10 +123,14 @@ export const initLenis = () => {
   // -- custom scrollbar: binds drag/ticker listeners on the first call only
   initScrollbar()
 
-  lenis.on('scroll', ({ scroll, limit }) => {
+  lenis.on('scroll', ({ scroll, limit, isScrolling }) => {
     if (_scrollbarThumb && limit > 0) {
       _scrollbarThumb.style.transform = `translateY(${(scroll / limit) * _thumbTravel}px)`
     }
+
+    // -- lenis also emits on stop(), start() and programmatic resets (page transitions):
+    // -- only a real scroll on a page that can scroll shows the bar
+    if (!isScrolling || limit <= 0) return
 
     // -- show when scroll, hide after 1s when stop
     document.body.classList.add('is-scrolling')
@@ -149,4 +155,18 @@ export const startScroll = () => {
     lenis.start()
     document.body.style.overflow = ''
   }
+}
+
+// -- smooth scroll to the element a "#hash" points to, false if it is not on the page
+// -- space above the target (e.g. a fixed header) comes from its CSS scroll-margin-top
+export const scrollToHash = (hash) => {
+  const target = hash && document.getElementById(decodeURIComponent(hash.slice(1)))
+  if (!target || !lenis) return false
+
+  lenis.scrollTo(target, {
+    offset: -(parseFloat(getComputedStyle(target).scrollMarginTop) || 0),
+    duration: 1.4,
+    easing: (t) => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2)
+  })
+  return true
 }

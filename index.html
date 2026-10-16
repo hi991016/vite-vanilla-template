@@ -5,12 +5,14 @@
   <include src="head.html" title="Home Page" />
 </head>
 
-<body>
+<body data-barba="wrapper">
+
+  <include src="transitions/stack.html" />
 
   <include src="header.html" />
 
   <!-- @main -->
-  <main class="homepage">
+  <main class="homepage" data-barba="container" data-barba-namespace="home">
     <!--* fv --->
     <section class="fv">
       <div class="fv_container">
@@ -18,10 +20,10 @@
       </div>
     </section>
     <!--* end fv --->
+
+    <include src="footer.html" />
   </main>
   <!-- @main -->
-
-  <include src="footer.html" />
 
   <include src="scrollbar.html" />
 
