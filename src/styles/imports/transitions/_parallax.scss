@@ -1,0 +1,31 @@
+/* Transition: parallax
+------------------------------------------------------------*/
+@use '@/styles/imports/core/mixins' as *;
+
+:root {
+  --parallax-dark-cl: #000;
+}
+
+// -- layers: current page (1) < dark overlay (2) < next page (3, set by gsap)
+[data-barba='container'] {
+  position: relative;
+  z-index: 1;
+  min-height: 100svh;
+  background: var(--main-bg-cl);
+}
+
+.t-parallax {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: clip;
+
+  &_dark {
+    position: absolute;
+    inset: 0;
+    background: var(--parallax-dark-cl);
+    opacity: 0;
+    visibility: hidden;
+  }
+}

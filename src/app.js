@@ -9,7 +9,7 @@ import { initLenis, stopScroll, startScroll, scrollToHash } from '@/modules/cust
 import { initNav, updateCurrentNav } from '@/modules/nav'
 
 // transitions: import only the ones this site uses, the rest stay out of the bundle
-import curve from '@/transitions/curve'
+import parallax from '@/transitions/parallax'
 
 // pages: src/pages/<namespace>.js, each loaded as its own chunk on first visit
 const pages = import.meta.glob('./pages/*.js')
@@ -143,7 +143,7 @@ window.addEventListener('DOMContentLoaded', () => {
   history.scrollRestoration = 'manual'
 
   initNav()
-  barba.init({ preventRunning: true, transitions: [curve] })
+  barba.init({ preventRunning: true, transitions: [parallax] })
   initScript(document.querySelector('[data-barba="container"]'))
   scrollToHash(location.hash)
 })
