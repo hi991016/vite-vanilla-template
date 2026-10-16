@@ -12,6 +12,7 @@ The build output stays readable and stable between builds, so the deployed HTML/
 |---|---|
 | **Build** | Vite 8 |
 | **Styling** | Sass |
+| **Page transitions** | Barba.js + GSAP |
 | **Scroll** | Lenis + GSAP ScrollTrigger |
 | **Lazy load** | vanilla-lazyload |
 | **Lint / format** | ESLint 10 (flat config) + Prettier |
@@ -29,15 +30,20 @@ The build output stays readable and stable between builds, so the deployed HTML/
 │   └── diff.js           # yarn diff
 ├── _server/              # Server copy for yarn diff (contents are git-ignored)
 └── src/
-    ├── app.js            # JS entry
-    ├── modules/          # JS modules (customLenis, ...)
+    ├── app.js            # JS entry, Barba setup
+    ├── modules/          # JS modules (customLenis, nav, ...)
+    ├── pages/            # page code, src/pages/<namespace>.js
+    ├── transitions/      # one file per page transition (stack, curve, ...)
     ├── partials/         # Shared HTML for <include> (head, header, footer, ...)
+    │   ├── transition.html   # includes the markup of the transition in use
+    │   └── transitions/      # markup of each transition
     ├── assets/images/
     └── styles/
         ├── style.scss    # SCSS entry
         └── imports/
             ├── core/     # variables, reset, layouts, header, footer, ...
-            └── pages/    # page-specific styles
+            ├── pages/    # page-specific styles
+            └── transitions/  # styles of each transition
 ```
 
 ---
@@ -101,6 +107,78 @@ Attributes become props. A partial passes its props on to any partial it include
 Write the value in single quotes. Double quotes inside `class="..."` make Prettier rewrite the line when it formats on save.
 
 Blocks can nest. A tag on a line of its own removes that line from the output. Editing a partial reloads the page in dev.
+
+## Page Transitions
+
+Barba swaps the `<main data-barba="container">` of each page without a full reload. Header, scrollbar and anything else outside the container stay on screen and are initialised once.
+
+| Name | Effect |
+|---|---|
+| `stack` | The next page slides up from the bottom and stacks over the current one, which shrinks, lifts and dims over a dark background. |
+| `curve` | A dark panel with curved edges sweeps up through the screen. It covers the current page, then exits at the top while the next page rises in. |
+
+Only the transition imported in `app.js` is bundled. The other files can stay in the repo at no cost.
+
+### Switching the transition
+
+A transition has three parts. Change all three, here from `curve` to `stack`:
+
+**1. JS:** `src/app.js`, the import and the name in `barba.init`
+
+```js
+import stack from '@/transitions/stack'
+```
+
+```js
+barba.init({ preventRunning: true, transitions: [stack] })
+```
+
+**2. Markup:** `src/partials/transition.html`
+
+```html
+<include src="transitions/stack.html" />
+```
+
+**3. Styles:** `src/styles/style.scss`
+
+```scss
+// transitions
+@use 'imports/transitions/stack';
+```
+
+No page needs editing: every page includes `transition.html`.
+
+If one part is missing, the transition still runs but looks broken. Without the markup there is no overlay or panel. Without the styles there is no background behind the leaving page. Remove the old `@use` as well. `stack` styles change the `body` background, so they must not stay loaded under another transition.
+
+### Adding a transition
+
+1. Create `src/transitions/<name>.js`. Export a Barba transition object (`name`, `leave`, `enter`, and other hooks as needed). The `primary-ease` and `primary-ease-out` eases are created in `app.js`.
+2. If it needs extra elements (overlay, panel), put them in `src/partials/transitions/<name>.html`.
+3. If it needs styles, add `src/styles/imports/transitions/_<name>.scss`.
+4. Switch to it as described above.
+
+Rules that keep the rest of the site working:
+
+- **Remove the old container yourself.** Barba keeps it until after `afterEnter`, so remove it in `enter` or `afterEnter` (`current.container.remove()`).
+- **Clean up in `afterEnter`.** Clear any inline styles set on the next container (`position: fixed`, transforms), then scroll to the top with `window.scrollTo({ top: 0, behavior: 'instant' })`. The transition's `afterEnter` runs before the global `after` hook, where `app.js` re-inits Lenis, lazyload, ScrollTrigger and the page code. Those need the final layout.
+- **Do not start or stop Lenis.** `app.js` stops scroll in `beforeLeave` and starts it again in `after`.
+- **Use `sync: true`** when both pages must be visible at the same time, as in `stack` and `curve`.
+
+### Page code
+
+Code for one page goes in `src/pages/<namespace>.js`, where `<namespace>` is the `data-barba-namespace` of its container. It is loaded as its own chunk the first time the page is visited.
+
+```js
+export default {
+  init(container) {},  // the page is on screen, layout is final
+  destroy() {}         // the page has been left: remove what init created
+}
+```
+
+- Query inside `container`, not `document`. During a transition both pages are in the DOM.
+- ScrollTriggers whose trigger is inside the container are killed automatically. Anything else that `init` creates (tweens, listeners, observers, timers) must be removed in `destroy`. A `gsap.context` scoped to the container does this for GSAP, see `src/pages/home.js`.
+- Inline `<script>` tags inside the container do not run after a transition.
+- Elements outside the container keep the markup of the first page loaded. Add `data-barba-sync` to copy their `class` from each new page, as `header.html` does for `is-home`.
 
 ## Path Alias
 

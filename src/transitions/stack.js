@@ -2,7 +2,7 @@ import gsap from 'gsap'
 
 // -- stack: the next page slides up from the bottom and stacks over the current one,
 // -- which shrinks, lifts and dims over the dark body behind it
-// -- needs: <include src="transitions/stack.html" /> on every page (overlay)
+// -- needs: <include src="transitions/stack.html" /> in src/partials/transition.html
 // --        @use 'imports/transitions/stack' in style.scss
 // --        eases primary-ease / primary-ease-out, created in app.js
 
