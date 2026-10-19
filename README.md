@@ -118,6 +118,7 @@ Barba swaps the `<main data-barba="container">` of each page without a full relo
 | `curve` | A dark panel with curved edges sweeps up through the screen. It covers the current page, then exits at the top while the next page rises in. |
 | `parallax` | The current page drifts up slowly and darkens while the next page slides up over it. |
 | `fade` | Fades through the page background: an overlay fades in, the page is swapped under it, then it fades out while the next page rises in. Add `data-fade-reveal` to elements of a page to make them rise in one by one. The color is `--fade-cl`. |
+| `unveil` | The next page is unveiled from the bottom of the screen, its top edge sweeping up while it rises, as the current page shrinks, sinks and dims over a dark background. The color is `--unveil-dark-cl`. |
 
 Only the transition imported in `app.js` is bundled. The other files can stay in the repo at no cost.
 

@@ -1,0 +1,21 @@
+/* Transition: unveil
+------------------------------------------------------------*/
+@use '@/styles/imports/core/mixins' as *;
+
+:root {
+  // -- the color the leaving page sinks and dims into
+  --unveil-dark-cl: #000;
+}
+
+// -- dark body shows behind the leaving page while it shrinks
+body {
+  background: var(--unveil-dark-cl);
+}
+
+// -- layers: current page (1) < next page (3, set by gsap)
+[data-barba='container'] {
+  position: relative;
+  z-index: 1;
+  min-height: 100svh;
+  background: var(--main-bg-cl);
+}
