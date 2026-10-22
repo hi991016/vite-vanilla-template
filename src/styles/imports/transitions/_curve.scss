@@ -2,10 +2,6 @@
 ------------------------------------------------------------*/
 @use '@/styles/imports/core/mixins' as *;
 
-:root {
-  --curve-bg-cl: #101820;
-}
-
 .t-curve {
   position: fixed;
   inset: 0;
@@ -23,7 +19,7 @@
     align-items: center;
     width: 100%;
     height: 100%;
-    background: var(--curve-bg-cl);
+    background: var(--black-cl);
   }
 
   // -- the edges are strips glued to the panel, each showing part of a huge ellipse:
@@ -56,6 +52,6 @@
     width: 125%;
     height: 500%;
     border-radius: 50%;
-    background: var(--curve-bg-cl);
+    background: var(--black-cl);
   }
 }

@@ -9,7 +9,7 @@ import { initLenis, stopScroll, startScroll, scrollToHash } from '@/modules/cust
 import { initNav, updateCurrentNav } from '@/modules/nav'
 
 // transitions: import only the ones this site uses, the rest stay out of the bundle
-import unveil from '@/transitions/unveil'
+import unveil from '@/transitions/rise'
 
 // pages: src/pages/<namespace>.js, each loaded as its own chunk on first visit
 const pages = import.meta.glob('./pages/*.js')

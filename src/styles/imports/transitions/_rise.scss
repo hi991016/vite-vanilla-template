@@ -1,0 +1,26 @@
+/* Transition: rise
+------------------------------------------------------------*/
+@use '@/styles/imports/core/mixins' as *;
+
+:root {
+  // -- the color the current page darkens into while the next one rises
+  --rise-overlay-cl: rgb(0 0 0 / 0.7);
+}
+
+// -- layers: current page (1) < overlay (2) < next page (3, set by gsap)
+[data-barba='container'] {
+  position: relative;
+  z-index: 1;
+  min-height: 100svh;
+  background: var(--main-bg-cl);
+}
+
+.t-rise_overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  background: var(--rise-overlay-cl);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
