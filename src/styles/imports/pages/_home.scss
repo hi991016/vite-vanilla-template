@@ -3,4 +3,36 @@
 @use '@/styles/imports/core/mixins' as *;
 
 .homepage {
+  // -- hero: full screen media over black, src/pages/home.js sinks and fades it on scroll
+  .hero {
+    position: relative;
+    overflow: clip;
+    background: #000;
+    color: #fff;
+
+    &_media {
+      position: absolute;
+      inset: 0;
+      will-change: transform, opacity;
+
+      // -- darkens the media so the title stays readable
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: #000;
+        opacity: 0.4;
+      }
+    }
+
+    &_img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    &_container {
+      position: relative;
+    }
+  }
 }
