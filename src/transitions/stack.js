@@ -1,7 +1,9 @@
 import gsap from 'gsap'
+import { revealTitle } from '@/modules/revealTitle'
 
 // -- stack: the next page slides up from the bottom and stacks over the current one,
-// -- which shrinks, lifts and dims over the dark body behind it
+// -- which shrinks, lifts and dims over the dark body behind it. the lines of its h1 then
+// -- slide up out of a mask, one by one
 // -- needs: <include src="transitions/stack.html" /> in src/partials/transition.html
 // --        @use 'imports/transitions/stack' in style.scss
 // --        eases primary-ease / primary-ease-out, created in app.js
@@ -28,9 +30,11 @@ export default {
     // -- pin the incoming page on top so it can slide over the leaving one
     gsap.set(next.container, { position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 3 })
 
-    return gsap
+    const tl = gsap
+      .timeline()
       .from(next.container, { y: '100svh', duration: DURATION, ease: 'primary-ease' })
-      .then()
+
+    return revealTitle(tl, next.container, DURATION * 0.6).then()
   },
 
   // -- runs before the global `after` hook, so app.js inits the page with its final layout

@@ -1,7 +1,9 @@
 import gsap from 'gsap'
+import { revealTitle } from '@/modules/revealTitle'
 
 // -- curve: a dark panel with curved edges sweeps up through the viewport. it rises over
 // -- the current page (curved top edge swells), then it keeps rising off the top (curved bottom edge flattens) while the next page comes up behind it
+// -- the lines of the next page's h1 then slide up out of a mask, one by one
 // -- needs: <include src="transitions/curve.html" /> in src/partials/transition.html
 // --        @use 'imports/transitions/curve' in style.scss
 // --        ease primary-ease, created in app.js
@@ -62,7 +64,7 @@ export default {
       return Promise.resolve()
     }
 
-    return gsap
+    const tl = gsap
       .timeline({ defaults: { duration: DURATION, ease: 'primary-ease' } })
       .set(next.container, { autoAlpha: 1 }, ENTER_AT)
       .fromTo(
@@ -73,7 +75,8 @@ export default {
       )
       .to(p.bottom, { scaleY: 0 }, ENTER_AT)
       .from(next.container, { y: '25dvh', immediateRender: false }, ENTER_AT)
-      .then()
+
+    return revealTitle(tl, next.container, ENTER_AT + DURATION * 0.4).then()
   },
 
   // -- runs before the global `after` hook, so app.js inits the page with its final layout

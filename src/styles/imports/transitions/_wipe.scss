@@ -1,0 +1,26 @@
+/* Transition: wipe
+------------------------------------------------------------*/
+@use '@/styles/imports/core/mixins' as *;
+
+:root {
+  // -- the color the current page darkens into while the next one is wiped in
+  --wipe-dark-cl: #000;
+}
+
+// -- layers: current page (1) < dark overlay (2) < next page (3, set by gsap)
+[data-barba='container'] {
+  position: relative;
+  z-index: 1;
+  min-height: 100svh;
+  background: var(--main-bg-cl);
+}
+
+.t-wipe_dark {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  background: var(--wipe-dark-cl);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}

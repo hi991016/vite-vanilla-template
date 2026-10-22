@@ -1,8 +1,10 @@
 import gsap from 'gsap'
 import { CustomEase } from 'gsap/CustomEase'
+import { revealTitle } from '@/modules/revealTitle'
 
 // -- parallax: the current page drifts up slowly and darkens, while the next page
-// -- slides up from the bottom over it at full speed
+// -- slides up from the bottom over it at full speed. the lines of its h1 then slide up
+// -- out of a mask, one by one
 // -- needs: <include src="transitions/parallax.html" /> in src/partials/transition.html
 // --        @use 'imports/transitions/parallax' in style.scss
 
@@ -39,13 +41,15 @@ export default {
   enter({ next }) {
     if (reducedMotion.matches) return Promise.resolve()
 
-    return gsap
+    const tl = gsap
+      .timeline()
       .fromTo(
         next.container,
         { y: '100vh' },
         { y: '0vh', duration: DURATION, ease: 'parallax-ease' }
       )
-      .then()
+
+    return revealTitle(tl, next.container, DURATION * 0.6).then()
   },
 
   // -- runs before the global `after` hook, so app.js inits the page with its final layout

@@ -1,8 +1,10 @@
 import gsap from 'gsap'
 import { CustomEase } from 'gsap/CustomEase'
+import { revealTitle } from '@/modules/revealTitle'
 
 // -- unveil: the next page is unveiled from the bottom of the screen, its top edge sweeping
-// -- up while it rises, as the current page shrinks, sinks and dims over the dark body
+// -- up while it rises, as the current page shrinks, sinks and dims over the dark body. the
+// -- lines of its h1 then slide up out of a mask, one by one
 // -- needs: <include src="transitions/unveil.html" /> in src/partials/transition.html
 // --        @use 'imports/transitions/unveil' in style.scss
 
@@ -46,13 +48,15 @@ export default {
   enter({ next }) {
     if (reducedMotion.matches) return Promise.resolve()
 
-    return gsap
+    const tl = gsap
+      .timeline()
       .fromTo(
         next.container,
         { clipPath: 'inset(85svh 0% 0% 0%)', y: '15svh' },
         { clipPath: 'inset(0svh 0% 0% 0%)', y: '0svh', duration: DURATION, ease: 'unveil-ease' }
       )
-      .then()
+
+    return revealTitle(tl, next.container, DURATION * 0.6).then()
   },
 
   // -- runs before the global `after` hook, so app.js inits the page with its final layout
